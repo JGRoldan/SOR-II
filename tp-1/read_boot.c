@@ -43,7 +43,7 @@ int main() {
     PartitionTable pt[4];
     Fat12BootSector bs;
     
-    fseek(in, ... , SEEK_SET); // Ir al inicio de la tabla de particiones. Completar ...
+    fseek(in, 0x1BE , SEEK_SET); // Ir al inicio de la tabla de particiones. Byte Range 446-461 Partition Table Entry #1 446 = 0x1BE 
     fread(pt, sizeof(PartitionTable), 4, in); // leo entradas 
     
     for(i=0; i<4; i++) {        
@@ -65,7 +65,21 @@ int main() {
     printf("  Jump code: %02X:%02X:%02X\n", bs.jmp[0], bs.jmp[1], bs.jmp[2]);
     printf("  OEM code: [%.8s]\n", bs.oem);
     printf("  sector_size: %d\n", bs.sector_size);
-	// {...} COMPLETAR
+	// Completamos con datos Fat12BootSector
+    printf("  sector_per_cluster: %d\n", bs.sector_per_cluster);
+    printf("  reserved_sectors: %d\n", bs.reserved_sectors);
+    printf("  num_fats: %d\n", bs.num_fats);
+    printf("  Max number of files in the Root Directory: %d\n", bs.max_root_entries);
+    printf("  total_sectors: %d\n", bs.total_sectors);
+    printf("  media_type: 0x%04X\n", bs.media_type);
+    printf("  fat_size: %d\n", bs.fat_size);
+    printf("  sectors_per_track: %d\n", bs.sectors_per_track);
+    printf("  num_heads: %d\n", bs.num_heads);
+    printf("  hidden_sectors: %d\n", bs.hidden_sectors);
+    printf("  total_sectors_extension: %d\n", bs.total_sectors_extension);
+    printf("  drive_number: %d\n", bs.drive_number);
+    printf("  boot_signature: 0x%02X\n", bs.boot_signature);
+
     printf("  volume_id: 0x%08X\n", bs.volume_id);
     printf("  Volume label: [%.11s]\n", bs.volume_label);
     printf("  Filesystem type: [%.8s]\n", bs.fs_type);
