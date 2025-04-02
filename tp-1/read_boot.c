@@ -20,14 +20,14 @@ typedef struct {
     unsigned char num_fats; // byte 16, en FAT12 es 2 --> redundancia
     unsigned short max_root_entries; // bytes 17-18, maximo de archivos en raiz
     unsigned short total_sectors; // bytes 19-20, total de sectores en la particion
-    unsigned short media_type; // byte 21, tipo de medio, 0xF8 para FAT12
+    unsigned char media_type; // byte 21, tipo de medio, 0xF8 para FAT12
     unsigned short fat_size; // bytes 22-23, tamaño de cada FAT 
     unsigned short sectors_per_track; // bytes 24-25, cantidad de sectores por pista
     unsigned short num_heads; // bytes 26-27, cantidad de cabezales
     unsigned int hidden_sectors; // bytes 28-31, cantidad de sectores ocultos
     unsigned int total_sectors_extension; // bytes 32-35, total de sectores en la particion (0 si alcanzaron los bytes 19-20)
     unsigned char drive_number; // byte 36, numero de unidad logica
-    //byte 37 no usado
+    unsigned char reserved; //byte 37 no usado
     unsigned char boot_signature; // byte 38, firma 0x38 para validar los siguientes 3 campos
     //
     unsigned int volume_id;//bytes 39-42, ID del volumen
@@ -71,14 +71,14 @@ int main() {
     printf("  num_fats: %d\n", bs.num_fats);
     printf("  Max number of files in the Root Directory: %d\n", bs.max_root_entries);
     printf("  total_sectors: %d\n", bs.total_sectors);
-    printf("  media_type: 0x%04X\n", bs.media_type);
+    printf("  media_type: 0x%02X\n", bs.media_type);
     printf("  fat_size: %d\n", bs.fat_size);
     printf("  sectors_per_track: %d\n", bs.sectors_per_track);
     printf("  num_heads: %d\n", bs.num_heads);
     printf("  hidden_sectors: %d\n", bs.hidden_sectors);
     printf("  total_sectors_extension: %d\n", bs.total_sectors_extension);
-    printf("  drive_number: %d\n", bs.drive_number);
-    printf("  boot_signature: 0x%02X\n", bs.boot_signature);
+    printf("  drive_number: %02X\n", bs.drive_number);
+    printf("  boot_signature: %02X\n", bs.boot_signature);
 
     printf("  volume_id: 0x%08X\n", bs.volume_id);
     printf("  Volume label: [%.11s]\n", bs.volume_label);
