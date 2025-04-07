@@ -9,7 +9,7 @@
 #define ARCHIVE 0x20
 #define DIRECTORY 0x10
 
-typedef struct {// PARTICION FAT12
+typedef struct {// PARTICION
     unsigned char first_byte;
     unsigned char start_chs[3];
     unsigned char partition_type;
@@ -18,7 +18,7 @@ typedef struct {// PARTICION FAT12
     char file_size[4];
 } __attribute((packed)) PartitionTable;
 
-typedef struct { // BOOT SECTOR FAT12
+typedef struct { // BOOT SECTOR ESTRUCTURA FAT32
     unsigned char jmp[3];//3B--Bien
     char oem[8];//8B--Bien
     unsigned short sector_size;//2B
@@ -43,7 +43,7 @@ typedef struct { // BOOT SECTOR FAT12
     unsigned short boot_sector_signature;
 } __attribute((packed)) Fat12BootSector;
 
-typedef struct { // ENTRADAS
+typedef struct { // ENTRADA ESTRUCTURA FAT32
 	unsigned char filename[8]; //8B
     char extension[3]; //3B
     unsigned char attributes; //1B
@@ -72,7 +72,7 @@ void content_directory(Fat12Entry *entry, FILE *f, Fat12BootSector bs){
 	unsigned short num_entries = cluster_size_byte / sizeof(Fat12Entry);// 512/32= total de entradas que entran en el cluster
 	
 	long int offset_content = sizeof(Fat12BootSector) 
-    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /*calculo para moverse al directorio raiz*/
+    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /calculo para moverse al directorio raiz/
     + bs.root_dir_entries * sizeof(Fat12Entry) 
     + ((cluster_content_file - 2)* cluster_size_byte);
     
@@ -84,25 +84,24 @@ void content_directory(Fat12Entry *entry, FILE *f, Fat12BootSector bs){
    	}
     
     fseek(f, directory_index, SEEK_SET);//Se restablece la posicion del puntero
-    printf("-------------------Fin-------------------");
+    printf("-------------------Fin-------------------\n\n");
 }
 
 void content_archive(Fat12Entry *entry, FILE *f, Fat12BootSector bs){
-	printf("*************************");
+	printf("***Contenido***");
 	if(entry->filename[0]==DELETED_FILE){
 		printf("\n ARCHIVO VACIO.\n\n");
+		printf("*********\n\n");
 		return;
 	}
-	
 	unsigned long file_index = ftell(f);//ftell retorna la posicion actual del puntero del archivo
 	
 	int cluster_size_byte = bs.sector_size * bs.sectors_per_cluster; //se calcula el total de clusters en bytes 512*2
 	int cluster_content_file = entry->start_cluster;
 	char file_content[cluster_size_byte + 1]; //Contenido del archivo
 	
-	
 	long int offset_content = sizeof(Fat12BootSector) 
-    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /*calculo para moverse al directorio raiz*/
+    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /calculo para moverse al directorio raiz/
     + bs.root_dir_entries * sizeof(Fat12Entry) 
     + ((cluster_content_file - 2)* cluster_size_byte);
     
@@ -112,7 +111,7 @@ void content_archive(Fat12Entry *entry, FILE *f, Fat12BootSector bs){
     
 	printf("\n%s\n\n", file_content);
  	fseek(f, file_index, SEEK_SET);//Se restablece la posicion del puntero
- 	printf("*************************\n");
+ 	printf("*********\n\n");
 }
 
 void print_file_info(Fat12Entry *entry, FILE *f, Fat12BootSector bs) {
@@ -122,8 +121,9 @@ void print_file_info(Fat12Entry *entry, FILE *f, Fat12BootSector bs) {
         return; 
     case DELETED_FILE: //Indica que el archivo fue borrado 
     	if(entry-> attributes == ARCHIVE){
-    		printf("\nArchivo borrado: [?%.7s.%.3s]\n", entry->filename+1, entry->extension);
-    		/*printf("\nDirectorio: [%.7s.%.3s]",entry-> filename+1, entry->extension);
+    		printf("\nEstructura del archivo borrado:\n");
+    		printf("\nNombre: [?%.7s]\n", entry->filename+1);
+    		printf("Extension: [%.3s]\n", entry->extension);
         	printf("Atributos : %X\n",entry->attributes);
         	printf("Reservado : %X\n",entry->reserved);
         	printf("Hora de creación(en milisegundos) : %X\n",entry->creation_time_msegs);
@@ -134,21 +134,8 @@ void print_file_info(Fat12Entry *entry, FILE *f, Fat12BootSector bs) {
         	printf("Hora de ultima modificacion : %X\n",entry->last_mod_time);
         	printf("Fecha de ultima modificacion : %X\n",entry->last_mod_date);
         	printf("Bajo num de cluster inicial: %X\n",entry->start_cluster);
-        	printf("Tamaño de archivo(B) : %X\n",entry->file_size);*/
+        	printf("Tamaño de archivo(B) : %X\n",entry->file_size);
         	content_archive(entry,f,bs);
-    	}else{
-    		/*printf("\nArchivo borrado: [?%.7s.%.3s]\n", entry->filename+1, entry->extension); // COMPLETAR
-        	printf("Atributos : %X\n",entry->attributes);
-        	printf("Reservado : %X\n",entry->reserved);
-        	printf("Hora de creación(en milisegundos) : %X\n",entry->creation_time_msegs);
-        	printf("Hora de creacion : %X\n",entry->creation_time);
-        	printf("Fecha de creacion : %X\n",entry->creation_date);
-        	printf("Ultima fecha de acceso : %X\n",entry->last_access_date);
-        	printf("Alto num de cluster inicial : %X\n",entry->high_cluster);
-        	printf("Hora de ultima modificacion : %X\n",entry->last_mod_time);
-        	printf("Fecha de ultima modificacion : %X\n",entry->last_mod_date);
-        	printf("Bajo num de cluster inicial: %X\n",entry->start_cluster);
-        	printf("Tamaño de archivo(B) : %X\n",entry->file_size);*/
     	}
         break;
     case FIRST_BYTE_0xE5: // Completar los ...//0x05 Indica que el byte inicial es 0xE5 
@@ -158,31 +145,9 @@ void print_file_info(Fat12Entry *entry, FILE *f, Fat12BootSector bs) {
     default:
     	if(entry-> attributes == DIRECTORY){
     		printf("\nDirectorio: [%.8s.%.3s]\n",entry-> filename, entry->extension);
-        	/*printf("Atributos : %X\n",entry->attributes);
-        	printf("Reservado : %X\n",entry->reserved);
-        	printf("Hora de creación(en milisegundos) : %X\n",entry->creation_time_msegs);
-        	printf("Hora de creacion : %X\n",entry->creation_time);
-        	printf("Fecha de creacion : %X\n",entry->creation_date);
-        	printf("Ultima fecha de acceso : %X\n",entry->last_access_date);
-       		printf("Alto num de cluster inicial : %X\n",entry->high_cluster);
-        	printf("Hora de ultima modificacion : %X\n",entry->last_mod_time);
-        	printf("Fecha de ultima modificacion : %X\n",entry->last_mod_date);
-        	printf("Bajo num de cluster inicial: %X\n",entry->start_cluster);
-        	printf("Tamaño de archivo(B) : %X\n",entry->file_size);*/
          	content_directory(entry,f,bs);
     	}else if(entry-> attributes == ARCHIVE){
-        	printf("\nArchivo:[%.8s.%.3s]\n\n",entry-> filename, entry->extension); // COMPLETAR 
-        	/*printf("Atributos : %X\n",entry->attributes);
-        	printf("Reservado : %X\n",entry->reserved);
-        	printf("Hora de creación(en milisegundos) : %X\n",entry->creation_time_msegs);
-        	printf("Hora de creacion : %X\n",entry->creation_time);
-        	printf("Fecha de creacion : %X\n",entry->creation_date);
-        	printf("Ultima fecha de acceso : %X\n",entry->last_access_date);
-        	printf("Alto num de cluster inicial : %X\n",entry->high_cluster);
-        	printf("Hora de ultima modificacion : %X\n",entry->last_mod_time);
-        	printf("Fecha de ultima modificacion : %X\n",entry->last_mod_date);
-        	printf("Bajo num de cluster inicial: %X\n",entry->start_cluster);
-        	printf("Tamaño de archivo(B) : %X\n",entry->file_size);*/
+        	printf("\nArchivo:[%.8s.%.3s]\n\n",entry-> filename, entry->extension); 
         	content_archive(entry, f, bs);
         }
     }
@@ -217,7 +182,7 @@ int main() {
 	fread(&bs, sizeof(Fat12BootSector), 1, in); // Lee el boot selector del sistema de archivos
     
     printf("En  0x%lx, sector size %d, FAT size %d sectors, %d FATs\n\n", 
-      	ftell(in), bs.sector_size, bs.fat_size_sectors, bs.number_of_fats); //se cambio 0x%X\n A 0x%lx\n
+      	ftell(in), bs.sector_size, bs.fat_size_sectors, bs.number_of_fats);
   //----------------------
       
     fseek(in, (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) *
@@ -229,7 +194,7 @@ int main() {
         print_file_info(&entry, in, bs);
     }
     
-    printf("\nLeido Root directory, ahora en 0x%lx\n", ftell(in)); //se cambio 0x%X\n A 0x%lx\n
+    printf("\nLeido Root directory, ahora en 0x%lx\n", ftell(in)); 
     fclose(in);
     return 0;
 }
