@@ -72,7 +72,7 @@ void content_directory(Fat12Entry *entry, FILE *f, Fat12BootSector bs){
 	unsigned short num_entries = cluster_size_byte / sizeof(Fat12Entry);// 512/32= total de entradas que entran en el cluster
 	
 	long int offset_content = sizeof(Fat12BootSector) 
-    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /calculo para moverse al directorio raiz/
+    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /*calculo para moverse al directorio raiz*/
     + bs.root_dir_entries * sizeof(Fat12Entry) 
     + ((cluster_content_file - 2)* cluster_size_byte);
     
@@ -101,7 +101,7 @@ void content_archive(Fat12Entry *entry, FILE *f, Fat12BootSector bs){
 	char file_content[cluster_size_byte + 1]; //Contenido del archivo
 	
 	long int offset_content = sizeof(Fat12BootSector) 
-    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /calculo para moverse al directorio raiz/
+    + (bs.reserved_sectors-1 + bs.fat_size_sectors * bs.number_of_fats) * bs.sector_size /*calculo para moverse al directorio raiz*/
     + bs.root_dir_entries * sizeof(Fat12Entry) 
     + ((cluster_content_file - 2)* cluster_size_byte);
     
